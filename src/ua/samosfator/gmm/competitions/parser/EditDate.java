@@ -47,9 +47,11 @@ public class EditDate {
         String[] str = s.split(" ");
         int hours = 0;
         int min = 0;
-        if (s.contains("hours")) {
+        if (s.contains("hours") && s.contains("min")) {
             hours = Integer.parseInt(str[0]);
             min = Integer.parseInt(str[2]);
+        } else if (s.contains("hours") && !s.contains("min")) {
+            hours = Integer.parseInt(str[0]);
         } else {
             min = Integer.parseInt(str[0]);
         }
