@@ -85,4 +85,38 @@ public class Edit {
     public void setAuthorUID(String authorUID) {
         this.authorUID = authorUID;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Edit)) return false;
+
+        Edit edit = (Edit) o;
+
+        if (!address.equals(edit.address)) return false;
+        if (!authorName.equals(edit.authorName)) return false;
+        if (!authorUID.equals(edit.authorUID)) return false;
+        if (!category.equals(edit.category)) return false;
+        if (!date.equals(edit.date)) return false;
+        if (!link.equals(edit.link)) return false;
+        if (!name.equals(edit.name)) return false;
+        if (!status.equals(edit.status)) return false;
+        if (!thumbnailLink.equals(edit.thumbnailLink)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + address.hashCode();
+        result = 31 * result + category.hashCode();
+        result = 31 * result + status.hashCode();
+        result = 31 * result + date.hashCode();
+        result = 31 * result + link.hashCode();
+        result = 31 * result + thumbnailLink.hashCode();
+        result = 31 * result + authorName.hashCode();
+        result = 31 * result + authorUID.hashCode();
+        return result;
+    }
 }
