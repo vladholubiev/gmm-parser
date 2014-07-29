@@ -45,22 +45,18 @@ public class Parser {
                 try {
                     url = new URL(URL.Tabs.EDITS, user.getUid(), startPos).getUrl();
                     LinkedHashSet<Edit> currentEdits = createEdits(Jsoup.connect(url).timeout(0).get(), user);
-                    Edit firstEdit = (Edit) currentEdits.toArray()[0];
 
                     if (isSameEdits(currentEdits, prevEdits)) {
-                        System.err.println("Reached the end");
+                        System.err.println("Next user");
                         break;
-                    } else if (EditDate.isInRange(firstEdit.getDate())) {
+                    } else {
                         prevEdits = new LinkedHashSet<>(currentEdits);
                         sender.write(currentEdits);
-                    } else {
-                        System.out.println("Following edits aren't in date range set in config");
-                        break;
                     }
                     startPos += 5;
                 } catch (Exception e) {
                     saveStartPos(startPos);
-                    System.out.println(url);
+                    System.out.println(e.getMessage());
                 }
             }
             System.out.println(url);
@@ -85,17 +81,19 @@ public class Parser {
                 links.size() + thumbnailLinks.size()) % 7 == 0;
 
         for (int i = 0; i < names.size(); i++) {
-            Edit edit = new Edit();
-            edit.setName(names.get(i).text());
-            edit.setAddress(addresses.get(i).attr("title"));
-            edit.setCategory(categories.get(i).text());
-            edit.setStatus(status.get(i).className().substring(5));
-            edit.setDate(new EditDate(dates.get(i).text()).getDate());
-            edit.setLink(links.get(i).attr("href"));
-            edit.setThumbnailLink("http:" + thumbnailLinks.get(i).attr("src"));
-            edit.setAuthorName(authorName.text());
-            edit.setAuthorUID(user.getUid());
-            edits.add(edit);
+            if (EditDate.isInRange(new EditDate(dates.get(i).text()).getDate())) {
+                Edit edit = new Edit();
+                edit.setName(names.get(i).text());
+                edit.setAddress(addresses.get(i).attr("title"));
+                edit.setCategory(categories.get(i).text());
+                edit.setStatus(status.get(i).className().substring(5));
+                edit.setDate(new EditDate(dates.get(i).text()).getDate());
+                edit.setLink(links.get(i).attr("href"));
+                edit.setThumbnailLink("http:" + thumbnailLinks.get(i).attr("src"));
+                edit.setAuthorName(authorName.text());
+                edit.setAuthorUID(user.getUid());
+                edits.add(edit);
+            }
         }
         return edits;
     }
