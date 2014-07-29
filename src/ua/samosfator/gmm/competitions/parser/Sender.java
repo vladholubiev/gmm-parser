@@ -43,7 +43,7 @@ public class Sender {
             row.getCustomElements().setValueLocal("thumbnailLink", edit.getThumbnailLink());
 
             service.insert(listFeedUrl, row);
-            System.out.println("edit: " + date);
+            System.out.println(edit.getAuthorName() + ": " + date);
         }
     }
 }
