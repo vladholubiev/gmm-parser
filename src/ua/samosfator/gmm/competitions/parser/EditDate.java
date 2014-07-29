@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -46,16 +47,16 @@ public class EditDate {
         String[] str = s.split(" ");
         int hours = 0;
         int min = 0;
-        int sec = 0;
         if (s.contains("hours")) {
             hours = Integer.parseInt(str[0]);
             min = Integer.parseInt(str[2]);
         } else {
             min = Integer.parseInt(str[0]);
-            sec = Integer.parseInt(str[2]);
         }
         LocalDateTime currentDateTime = LocalDateTime.now();
-        return currentDateTime.minusHours(hours).minusMinutes(min).minusSeconds(sec);
+        int currSeconds = currentDateTime.getSecond();
+        int currNanoSeconds = currentDateTime.getNano();
+        return currentDateTime.minusHours(hours).minusMinutes(min).minusSeconds(currSeconds).minusNanos(currNanoSeconds);
     }
 
     private String trimToDate(String raw) {
