@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 
 public class UserList {
@@ -14,7 +13,9 @@ public class UserList {
         try (BufferedReader br = new BufferedReader(new FileReader(new File(filename)))) {
             String line;
             while ((line = br.readLine()) != null) {
-                users.add(new User(line));
+                if (line.length() != 21) {
+                    users.add(new User(line.replaceAll(".*(&uid=)", "").substring(0, 21)));
+                } else users.add(new User(line));
             }
         } catch (IOException e) {
             e.printStackTrace();
