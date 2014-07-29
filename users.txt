@@ -1,0 +1,3 @@
+http://google.com.ua/mapmaker?gw=66&ptab=1&hl=uk&uid=212045872924793751797&start=0&sort=
+http://google.com.ua/mapmaker?gw=66&ptab=1&hl=uk&uid=205475192515570130093&start=0&sort=
+http://google.com.ua/mapmaker?gw=66&ptab=1&hl=uk&uid=208521286707803523696&start=0&sort=
