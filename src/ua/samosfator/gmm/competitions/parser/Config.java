@@ -2,6 +2,7 @@ package ua.samosfator.gmm.competitions.parser;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Properties;
 
 public class Config {
@@ -10,6 +11,8 @@ public class Config {
     public static String SPREADSHEET_URL = "";
     public static int START_POS = 0;
     public static String PARSED_USERS = "";
+    public static LocalDateTime FROM;
+    public static LocalDateTime TO;
 
     public static void setConfig() {
         Properties prop = new Properties();
@@ -18,6 +21,8 @@ public class Config {
             GOOGLE_ACCOUNT_USERNAME = prop.getProperty("GOOGLE_ACCOUNT_USERNAME");
             GOOGLE_ACCOUNT_PASSWORD = prop.getProperty("GOOGLE_ACCOUNT_PASSWORD");
             SPREADSHEET_URL = prop.getProperty("SPREADSHEET_URL");
+            FROM = EditDate.parseConfigDate(prop.getProperty("FROM"));
+            TO = EditDate.parseConfigDate(prop.getProperty("TO"));
             try {
                 START_POS = Integer.parseInt(prop.getProperty("START_POS"));
             } catch (NumberFormatException e) { START_POS = 0; }
