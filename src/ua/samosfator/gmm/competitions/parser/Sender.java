@@ -15,12 +15,13 @@ public class Sender {
     private SpreadsheetService service;
     private URL listFeedUrl;
 
-    public void prepare() throws ServiceException, IOException {
-        service = new SpreadsheetService("Print Google Spreadsheet Demo");
+    public Sender prepare() throws ServiceException, IOException {
+        service = new SpreadsheetService("Google Map Maker Competitions");
         service.setUserCredentials(Config.GOOGLE_ACCOUNT_USERNAME, Config.GOOGLE_ACCOUNT_PASSWORD);
         URL metaFeedUrl = new URL(Config.SPREADSHEET_URL);
         SpreadsheetEntry spreadsheet = service.getEntry(metaFeedUrl, SpreadsheetEntry.class);
         listFeedUrl = spreadsheet.getWorksheets().get(Config.SPREADSHEET_WORKSHEET).getListFeedUrl();
+        return this;
     }
 
     public HashSet<String> read(String column) throws ServiceException, IOException {
