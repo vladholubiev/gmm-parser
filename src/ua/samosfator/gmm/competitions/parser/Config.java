@@ -9,6 +9,7 @@ public class Config {
     public static String GOOGLE_ACCOUNT_USERNAME = "";
     public static String GOOGLE_ACCOUNT_PASSWORD = "";
     public static String SPREADSHEET_URL = "";
+    public static int SPREADSHEET_WORKSHEET;
     public static int START_POS = 0;
     public static String PARSED_USERS = "";
     public static LocalDateTime FROM;
@@ -21,6 +22,7 @@ public class Config {
             GOOGLE_ACCOUNT_USERNAME = prop.getProperty("GOOGLE_ACCOUNT_USERNAME");
             GOOGLE_ACCOUNT_PASSWORD = prop.getProperty("GOOGLE_ACCOUNT_PASSWORD");
             SPREADSHEET_URL = prop.getProperty("SPREADSHEET_URL");
+            SPREADSHEET_WORKSHEET = Integer.parseInt(prop.getProperty("SPREADSHEET_WORKSHEET"));
             FROM = EditDate.parseConfigDate(prop.getProperty("FROM"));
             TO = EditDate.parseConfigDate(prop.getProperty("TO"));
             try {

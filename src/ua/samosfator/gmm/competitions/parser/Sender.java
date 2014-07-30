@@ -20,7 +20,7 @@ public class Sender {
         service.setUserCredentials(Config.GOOGLE_ACCOUNT_USERNAME, Config.GOOGLE_ACCOUNT_PASSWORD);
         URL metaFeedUrl = new URL(Config.SPREADSHEET_URL);
         SpreadsheetEntry spreadsheet = service.getEntry(metaFeedUrl, SpreadsheetEntry.class);
-        listFeedUrl = spreadsheet.getWorksheets().get(0).getListFeedUrl();
+        listFeedUrl = spreadsheet.getWorksheets().get(Config.SPREADSHEET_WORKSHEET).getListFeedUrl();
     }
 
     public HashSet<String> read(String column) throws ServiceException, IOException {
