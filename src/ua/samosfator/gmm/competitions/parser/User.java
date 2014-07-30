@@ -16,8 +16,6 @@ public class User {
     private int days, totalEdits, approved, reviews, poi, businessListings, featureEdits;
     private double roadLength, regions;
 
-
-
     public User(String uid) {
         this.uid = uid;
     }
@@ -141,7 +139,7 @@ public class User {
 
     private void setStat(Document doc) {
         Elements stat1 = doc.select("#panel0").select(".time_period_large");
-        Elements stat2 = doc.select("#div-mini-dashboard-expanded").select("tr > td:eq(1)");
+        Elements stat2 = doc.select("#div-mini-dashboard-expanded").select("tr");
         String rawString = stat1.text().substring(1);
         int[] stat = stringArrToInt(rawString.replaceAll("\\D+", ",").split(","));
 
@@ -150,14 +148,13 @@ public class User {
         setApproved(stat[2]);
         setReviews(stat[3]);
 
-        double[] tableStat = new double[5];
-        for (int i = 0; i < tableStat.length; i++) tableStat[i] = Double.parseDouble(stat2.get(i).text());
-
-        setRoadLength(tableStat[0]);
-        setPoi((int) tableStat[1]);
-        setBusinessListings((int) tableStat[2]);
-        setRegions(tableStat[3]);
-        setFeatureEdits((int) tableStat[4]);
+        for (Element e : stat2) {
+            if (e.text().contains("Road length")) setRoadLength(Double.parseDouble(e.select("td:eq(1)").text()));
+            if (e.text().contains("Points of interest")) setPoi(Integer.parseInt(e.select("td:eq(1)").text()));
+            if (e.text().contains("Business listings")) setBusinessListings(Integer.parseInt(e.select("td:eq(1)").text()));
+            if (e.text().contains("Regions")) setRegions(Double.parseDouble(e.select("td:eq(1)").text()));
+            if (e.text().contains("Feature edits")) setFeatureEdits(Integer.parseInt(e.select("td:eq(1)").text()));
+        }
     }
 
     private void setName(Document doc) {

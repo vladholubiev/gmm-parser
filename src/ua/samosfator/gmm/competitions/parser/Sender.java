@@ -15,12 +15,16 @@ public class Sender {
     private SpreadsheetService service;
     private URL listFeedUrl;
 
-    public Sender prepare() throws ServiceException, IOException {
-        service = new SpreadsheetService("Google Map Maker Competitions");
-        service.setUserCredentials(Config.GOOGLE_ACCOUNT_USERNAME, Config.GOOGLE_ACCOUNT_PASSWORD);
-        URL metaFeedUrl = new URL(Config.SPREADSHEET_URL);
-        SpreadsheetEntry spreadsheet = service.getEntry(metaFeedUrl, SpreadsheetEntry.class);
-        listFeedUrl = spreadsheet.getWorksheets().get(Config.SPREADSHEET_WORKSHEET).getListFeedUrl();
+    public Sender prepare() {
+        try {
+            service = new SpreadsheetService("Google Map Maker Competitions");
+            service.setUserCredentials(Config.GOOGLE_ACCOUNT_USERNAME, Config.GOOGLE_ACCOUNT_PASSWORD);
+            URL metaFeedUrl = new URL(Config.SPREADSHEET_URL);
+            SpreadsheetEntry spreadsheet = service.getEntry(metaFeedUrl, SpreadsheetEntry.class);
+            listFeedUrl = spreadsheet.getWorksheets().get(Config.SPREADSHEET_WORKSHEET).getListFeedUrl();
+        } catch (IOException | ServiceException e) {
+            e.printStackTrace();
+        }
         return this;
     }
 
@@ -29,7 +33,7 @@ public class Sender {
         return (HashSet<String>) feed.getEntries().stream().map(entry -> entry.getCustomElements().getValue(column)).collect(Collectors.toSet());
     }
 
-    public void write(HashSet<Edit> edits) throws ServiceException, IOException {
+    public void write(HashSet<Edit> edits) {
         ListEntry row = new ListEntry();
         for (Edit edit : edits) {
             String date = edit.getDate().toString().replace("T", " ");
@@ -43,8 +47,37 @@ public class Sender {
             row.getCustomElements().setValueLocal("status", edit.getStatus());
             row.getCustomElements().setValueLocal("thumbnailLink", edit.getThumbnailLink());
 
-            service.insert(listFeedUrl, row);
+            tryInsertRow(row);
+
             System.out.println(edit.getAuthorName() + ": " + date);
+        }
+    }
+
+    public void write(User user) {
+        ListEntry row = new ListEntry();
+        row.getCustomElements().setValueLocal("name", user.getName());
+        row.getCustomElements().setValueLocal("uid", "'" + user.getUid());
+        row.getCustomElements().setValueLocal("totalEdits", String.valueOf(user.getTotalEdits()));
+        row.getCustomElements().setValueLocal("approved", String.valueOf(user.getApproved()));
+        row.getCustomElements().setValueLocal("reviews", String.valueOf(user.getReviews()));
+        row.getCustomElements().setValueLocal("days", String.valueOf(user.getDays()));
+        row.getCustomElements().setValueLocal("photoLink", String.valueOf(user.getPhotoLink()));
+        row.getCustomElements().setValueLocal("roadLength", String.valueOf(user.getRoadLength()));
+        row.getCustomElements().setValueLocal("regions", String.valueOf(user.getRegions()));
+        row.getCustomElements().setValueLocal("businessListings", String.valueOf(user.getBusinessListings()));
+        row.getCustomElements().setValueLocal("poi", String.valueOf(user.getPoi()));
+        row.getCustomElements().setValueLocal("featureEdits", String.valueOf(user.getFeatureEdits()));
+
+        tryInsertRow(row);
+
+        System.out.println("user: " + user.getName());
+    }
+
+    private void tryInsertRow(ListEntry row) {
+        try {
+            service.insert(listFeedUrl, row);
+        } catch (IOException | ServiceException e) {
+            e.printStackTrace();
         }
     }
 }

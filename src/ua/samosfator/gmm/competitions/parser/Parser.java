@@ -1,6 +1,5 @@
 package ua.samosfator.gmm.competitions.parser;
 
-import com.google.gdata.util.ServiceException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -13,24 +12,19 @@ import java.util.LinkedHashSet;
 import java.util.Properties;
 
 public class Parser {
-    private LinkedHashSet<User> users = new LinkedHashSet<>();
+    protected LinkedHashSet<User> users = new LinkedHashSet<>();
+    protected Sender sender;
+
     private LinkedHashSet<Edit> prevEdits = new LinkedHashSet<>(5, 1);
     private final int MAX_VISIBLE_EDITS = 2000;
-    private Sender sender;
     private String parsedUsers = "";
     private String url = "";
     private int startPos;
 
     public Parser(LinkedHashSet<User> users) {
         this.users = users;
-
         Config.setConfig();
-
-        try {
-            sender = new Sender().prepare();
-        } catch (ServiceException | IOException e) {
-            e.printStackTrace();
-        }
+        sender = new Sender().prepare();
     }
 
     public void start() {
