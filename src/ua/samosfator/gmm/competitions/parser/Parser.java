@@ -23,7 +23,7 @@ public class Parser {
 
     public Parser(LinkedHashSet<User> users) {
         this.users = users;
-        Config.setConfig();
+        Config.init();
         sender = new Sender().prepare();
     }
 
@@ -108,7 +108,7 @@ public class Parser {
             prop.setProperty("START_POS", "0");
             prop.store(output, "Interrupted position");
             //Refresh configs. Necessary
-            Config.setConfig();
+            Config.init();
         } catch (IOException e) {
             e.printStackTrace();
         }

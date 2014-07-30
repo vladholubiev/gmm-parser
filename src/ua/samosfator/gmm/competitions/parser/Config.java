@@ -15,7 +15,7 @@ public class Config {
     public static LocalDateTime FROM;
     public static LocalDateTime TO;
 
-    public static void setConfig() {
+    public static void init() {
         Properties prop = new Properties();
         try (FileInputStream input = new FileInputStream("config.properties")) {
             prop.load(input);
