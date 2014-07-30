@@ -6,7 +6,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
@@ -123,7 +122,7 @@ public class User {
     public User setFullInfo() {
         Document doc = null;
         try {
-            doc = Jsoup.connect(new URL(URL.Tabs.MAIN, uid).getUrl()).get();
+            doc = Jsoup.connect(new URL(URL.Tabs.MAIN, uid).getUrl()).timeout(0).get();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -138,23 +137,39 @@ public class User {
     }
 
     private void setStat(Document doc) {
-        Elements stat1 = doc.select("#panel0").select(".time_period_large");
-        Elements stat2 = doc.select("#div-mini-dashboard-expanded").select("tr");
-        String rawString = stat1.text().substring(1);
-        int[] stat = stringArrToInt(rawString.replaceAll("\\D+", ",").split(","));
+        Elements statString = doc.select("#panel0").select(".time_period_large");
+        Elements statTable = doc.select("#div-mini-dashboard-expanded").select("tr");
+        String[][] rawStat = parseStatString(statString.text());
 
-        setDays(stat[0]);
-        setTotalEdits(stat[1]);
-        setApproved(stat[2]);
-        setReviews(stat[3]);
+        for (String[] aRawStat : rawStat) {
+            if (aRawStat[1].contains("days")) setDays(Integer.parseInt(aRawStat[0]));
+            else if (aRawStat[1].contains("total")) setTotalEdits(Integer.parseInt(aRawStat[0]));
+            else if (aRawStat[1].contains("approved")) setApproved(Integer.parseInt(aRawStat[0]));
+            else if (aRawStat[1].contains("reviews")) setReviews(Integer.parseInt(aRawStat[0]));
+        }
 
-        for (Element e : stat2) {
+        for (Element e : statTable) {
             if (e.text().contains("Road length")) setRoadLength(Double.parseDouble(e.select("td:eq(1)").text()));
             if (e.text().contains("Points of interest")) setPoi(Integer.parseInt(e.select("td:eq(1)").text()));
-            if (e.text().contains("Business listings")) setBusinessListings(Integer.parseInt(e.select("td:eq(1)").text()));
+            if (e.text().contains("Business listings"))
+                setBusinessListings(Integer.parseInt(e.select("td:eq(1)").text()));
             if (e.text().contains("Regions")) setRegions(Double.parseDouble(e.select("td:eq(1)").text()));
             if (e.text().contains("Feature edits")) setFeatureEdits(Integer.parseInt(e.select("td:eq(1)").text()));
         }
+    }
+
+    private String[][] parseStatString(String raw) {
+        raw = raw.substring(1).replaceAll("\u00A0", " ");
+        String[] splitByComma = raw.split(",");
+        String[][] parsedArr = new String[splitByComma.length][2];
+
+        for (int i = 0; i < splitByComma.length; i++) {
+            splitByComma[i] = splitByComma[i].trim();
+            String[] splitBySpace = splitByComma[i].split(" ");
+            System.arraycopy(splitBySpace, 0, parsedArr[i], 0, 2);
+        }
+
+        return parsedArr;
     }
 
     private void setName(Document doc) {
