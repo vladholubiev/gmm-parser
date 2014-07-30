@@ -14,54 +14,53 @@ import java.util.Properties;
 
 public class Parser {
     private LinkedHashSet<User> users = new LinkedHashSet<>();
-    LinkedHashSet<Edit> prevEdits = new LinkedHashSet<>(5, 1);
-    String parsedUsers = "";
+    private LinkedHashSet<Edit> prevEdits = new LinkedHashSet<>(5, 1);
+    private final int MAX_VISIBLE_EDITS = 2000;
+    private Sender sender;
+    private String parsedUsers = "";
+    private String url = "";
+    private int startPos;
 
     public Parser(LinkedHashSet<User> users) {
         this.users = users;
-    }
 
-    public void start() {
-        String url = "";
-        int startPos;
         Config.setConfig();
 
-        Sender sender = new Sender();
         try {
-            sender.prepare();
+            sender = new Sender().prepare();
         } catch (ServiceException | IOException e) {
             e.printStackTrace();
         }
+    }
 
+    public void start() {
         for (User user : users) {
-            boolean userIsParsed = Config.PARSED_USERS.contains(user.getUid());
-            if (!userIsParsed) {
-                startPos = 0;
-            } else if (Config.START_POS != 0) { //User not parsed or parsing interrupted
-                startPos = Config.START_POS;
-            } else continue; //User is already parsed, so skip it!
-            //Map maker doesn't store more than 2000 edits
-            while (startPos < 2000) {
-                try {
-                    url = new URL(URL.Tabs.EDITS, user.getUid(), startPos).getUrl();
-                    LinkedHashSet<Edit> currentEdits = createEdits(Jsoup.connect(url).timeout(0).get(), user);
+            boolean isUserParsed = Config.PARSED_USERS.contains(user.getUid());
 
-                    if (isSameEdits(currentEdits, prevEdits)) {
-                        System.err.println("Next user");
-                        break;
-                    } else {
-                        prevEdits = new LinkedHashSet<>(currentEdits);
-                        sender.write(currentEdits);
-                    }
-                    startPos += 5;
-                } catch (Exception e) {
-                    saveStartPos(startPos);
-                    System.out.println(e.getMessage());
-                }
+            if (!isUserParsed) startPos = 0;
+            else if (Config.START_POS != 0) startPos = Config.START_POS;
+            else continue;
+
+            while (startPos < MAX_VISIBLE_EDITS) parseNextPage(user);
+
+            saveParsedUsers(user);
+        }
+    }
+
+    private void parseNextPage(User user) {
+        try {
+            url = new URL(URL.Tabs.EDITS, user.getUid(), startPos).getUrl();
+            LinkedHashSet<Edit> currentEdits = createEdits(Jsoup.connect(url).timeout(0).get(), user);
+
+            if (isSameEdits(currentEdits, prevEdits)) return;
+            else {
+                prevEdits = new LinkedHashSet<>(currentEdits);
+                sender.write(currentEdits);
             }
-            System.out.println(url);
-
-            saveParsedUsers(user, parsedUsers);
+            startPos += 5;
+        } catch (Exception e) {
+            saveStartPos(startPos);
+            System.out.println(e.getMessage());
         }
     }
 
@@ -98,7 +97,7 @@ public class Parser {
         return edits;
     }
 
-    private void saveParsedUsers(User user, String parsedUsers) {
+    private void saveParsedUsers(User user) {
         parsedUsers = Config.PARSED_USERS + parsedUsers + user.getUid() + ", ";
 
         Properties prop = new Properties();
@@ -106,6 +105,7 @@ public class Parser {
             prop.setProperty("GOOGLE_ACCOUNT_USERNAME", Config.GOOGLE_ACCOUNT_USERNAME);
             prop.setProperty("GOOGLE_ACCOUNT_PASSWORD", Config.GOOGLE_ACCOUNT_PASSWORD);
             prop.setProperty("SPREADSHEET_URL", Config.SPREADSHEET_URL);
+            prop.setProperty("SPREADSHEET_WORKSHEET", String.valueOf(Config.SPREADSHEET_WORKSHEET));
             prop.setProperty("FROM", Config.FROM.format(EditDate.configDateFormat));
             prop.setProperty("TO", Config.TO.format(EditDate.configDateFormat));
 
@@ -126,6 +126,7 @@ public class Parser {
             prop.setProperty("GOOGLE_ACCOUNT_USERNAME", Config.GOOGLE_ACCOUNT_USERNAME);
             prop.setProperty("GOOGLE_ACCOUNT_PASSWORD", Config.GOOGLE_ACCOUNT_PASSWORD);
             prop.setProperty("SPREADSHEET_URL", Config.SPREADSHEET_URL);
+            prop.setProperty("SPREADSHEET_WORKSHEET", String.valueOf(Config.SPREADSHEET_WORKSHEET));
             prop.setProperty("PARSED_USERS", Config.PARSED_USERS + parsedUsers);
             prop.setProperty("FROM", Config.FROM.format(EditDate.configDateFormat));
             prop.setProperty("TO", Config.TO.format(EditDate.configDateFormat));
