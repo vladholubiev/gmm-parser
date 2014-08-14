@@ -46,8 +46,8 @@ public class Edit {
         this.status = status;
     }
 
-    public LocalDateTime getDate() {
-        return date;
+    public String getDate() {
+        return date.toString().replace("T", " ");
     }
 
     public void setDate(LocalDateTime date) {
