@@ -1,5 +1,6 @@
 package ua.samosfator.gmm.competitions.parser;
 
+import com.google.common.base.CaseFormat;
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.spreadsheet.ListEntry;
 import com.google.gdata.data.spreadsheet.ListFeed;
@@ -7,6 +8,8 @@ import com.google.gdata.data.spreadsheet.SpreadsheetEntry;
 import com.google.gdata.util.ServiceException;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.stream.Collectors;
@@ -36,37 +39,52 @@ public class Sender {
     public void write(HashSet<Edit> edits) {
         ListEntry row = new ListEntry();
         for (Edit edit : edits) {
-            String date = edit.getDate().toString().replace("T", " ");
-            row.getCustomElements().setValueLocal("date", date);
-            row.getCustomElements().setValueLocal("authorName", edit.getAuthorName());
-            row.getCustomElements().setValueLocal("authorUID", "'" + edit.getAuthorUID());
-            row.getCustomElements().setValueLocal("name", edit.getName());
-            row.getCustomElements().setValueLocal("category", edit.getCategory());
-            row.getCustomElements().setValueLocal("link", edit.getLink());
-            row.getCustomElements().setValueLocal("address", edit.getAddress());
-            row.getCustomElements().setValueLocal("status", edit.getStatus());
-            row.getCustomElements().setValueLocal("thumbnailLink", edit.getThumbnailLink());
+            for (Method method : Edit.class.getMethods()) {
+                String methodName = method.getName();
+
+                if (methodName.startsWith("get")) {
+                    String columnName = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, methodName.replace("get", ""));
+
+                    try {
+                        String value = String.valueOf(method.invoke(edit));
+
+                        if (columnName.equals("authorUID")) {
+                            value += "'" + value;
+                        }
+                        row.getCustomElements().setValueLocal(columnName, value);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
 
             tryInsertRow(row);
 
-            System.out.println(edit.getAuthorName() + ": " + date);
+            System.out.println(edit.getAuthorName() + ":" + edit.getDate());
         }
     }
 
     public void write(User user) {
         ListEntry row = new ListEntry();
-        row.getCustomElements().setValueLocal("name", user.getName());
-        row.getCustomElements().setValueLocal("uid", "'" + user.getUid());
-        row.getCustomElements().setValueLocal("totalEdits", String.valueOf(user.getTotalEdits()));
-        row.getCustomElements().setValueLocal("approved", String.valueOf(user.getApproved()));
-        row.getCustomElements().setValueLocal("reviews", String.valueOf(user.getReviews()));
-        row.getCustomElements().setValueLocal("days", String.valueOf(user.getDays()));
-        row.getCustomElements().setValueLocal("photoLink", String.valueOf(user.getPhotoLink()));
-        row.getCustomElements().setValueLocal("roadLength", String.valueOf(user.getRoadLength()));
-        row.getCustomElements().setValueLocal("regions", String.valueOf(user.getRegions()));
-        row.getCustomElements().setValueLocal("businessListings", String.valueOf(user.getBusinessListings()));
-        row.getCustomElements().setValueLocal("poi", String.valueOf(user.getPoi()));
-        row.getCustomElements().setValueLocal("featureEdits", String.valueOf(user.getFeatureEdits()));
+
+        for (Method method : User.class.getMethods()) {
+            String methodName = method.getName();
+
+            if (!methodName.equals("getBadges") && methodName.startsWith("get")) {
+                String columnName = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, methodName.replace("get", ""));
+
+                try {
+                    String value = String.valueOf(method.invoke(user));
+
+                    if (columnName.equals("uid")) {
+                        value += "'" + value;
+                    }
+                    row.getCustomElements().setValueLocal(columnName, value);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
         tryInsertRow(row);
 
